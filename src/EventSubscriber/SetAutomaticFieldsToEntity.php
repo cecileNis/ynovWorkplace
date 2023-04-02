@@ -3,9 +3,11 @@
 namespace App\EventSubscriber;
 
 use ApiPlatform\Symfony\EventListener\EventPriorities;
+use App\Entity\Conversation;
 use App\Entity\Group;
 use App\Entity\GroupRequest;
 use App\Entity\Message;
+use App\Entity\PrivateMessage;
 use App\Entity\Thread;
 use App\Entity\User;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -15,6 +17,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
+
 
 class SetAutomaticFieldsToEntity implements EventSubscriberInterface
 {
@@ -53,7 +56,7 @@ class SetAutomaticFieldsToEntity implements EventSubscriberInterface
      */
     public function needExtraData(mixed $entity): bool
     {
-        return $entity instanceof GroupRequest || $entity instanceof Group || $entity instanceof Thread || $entity instanceof Message;
+        return $entity instanceof GroupRequest || $entity instanceof Group || $entity instanceof Thread || $entity instanceof Message || $entity instanceof Conversation || $entity instanceof PrivateMessage;
     }
 
     /**
@@ -83,6 +86,14 @@ class SetAutomaticFieldsToEntity implements EventSubscriberInterface
                 /** @var Thread $entity */
                 $entity->setOwner($user);
                 break;
+            case Conversation::class:
+                /** @var Conversation $entity */
+                $entity->setOwner($user);
+                break;
+            case PrivateMessage::class:
+                /** @var PrivateMessage $entity */
+                $entity->setOwner($user);
+                break;
         }
     }
 
@@ -95,7 +106,7 @@ class SetAutomaticFieldsToEntity implements EventSubscriberInterface
                 $entity->setSlug($slugger->slug($entity->getTitle()));
                 break;
             case Message::class:
-                /** @var Thread $entity */
+                /** @var Message $entity */
                 $entity->setModifiedAt(new \DateTime('now'));
                 $entity->setHasBeenEdited(true);
                 break;
